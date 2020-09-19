@@ -221,7 +221,7 @@ const performAuthDance = function () {
 const checkInput = function (input) {
     //checks user input to ensure it contains a user id 
     input = input.trim();   //remove whitespace
-    if(input.startsWith('http') || input.includes('open.spotify.com') || input.startsWith('spotify:user')) return true;
+    if(input.startsWith('http') || input.includes('open.spotify.com') || input.startsWith('spotify:user:')) return true;
     return false;
 }
 
@@ -231,7 +231,7 @@ const getId = function getIdFromUserInput(input) {
     //if we have a url
     if(input.startsWith('http') || input.includes('open.spotify.com')) id = input.split('/').pop().split('?')[0];
     //if we have a uri
-    else if(input.startsWith('spotify:user')) id = input.split(':').pop();
+    else if(input.startsWith('spotify:user:')) id = input.split(':').pop(); //even though .pop() is somewhat inefficent, its less practical to get the length of the array and use that as our index
     return id;
 }
 

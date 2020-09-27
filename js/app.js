@@ -220,20 +220,23 @@ const performAuthDance = function () {
 
 const checkInput = function (input) {
     //checks user input to ensure it contains a user id 
-    input = input.trim();   //remove whitespace
-    if(input.startsWith('http') || input.includes('open.spotify.com') || input.startsWith('spotify:user:')) return true;
+    input = input.toString().trim();   //remove whitespace
+    if((input.startsWith('http') && input.includes('open.spotify.com') && input.includes('/user/')) ||
+       (input.startsWith('open.spotify.com') && input.includes('/user/')) ||
+        input.startsWith('spotify:user:')) return true;
     return false;
-}
+};
 
 const getId = function getIdFromUserInput(input) {
-    input = input.trim();
+    //function assumes input passed the checkInput function
+    input = input.toString().trim();
     let id = undefined; //default to undefined for error handling
     //if we have a url
     if(input.startsWith('http') || input.includes('open.spotify.com')) id = input.split('/').pop().split('?')[0];
     //if we have a uri
     else if(input.startsWith('spotify:user:')) id = input.split(':').pop(); //even though .pop() is somewhat inefficent, its less practical to get the length of the array and use that as our index
     return id;
-}
+};
 
 const getUserPlaylists = function (uid = '') {
     //retrieves the playlists of the currently logged in user and checks them against

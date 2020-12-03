@@ -1,6 +1,6 @@
 import { credentials } from "./credentials.js";
 
-const CURRENT_VERSION = "0.1.0";
+const CURRENT_VERSION = "0.1.1";
 
 const customLocalStorage = {
     getContent: function() {
@@ -298,7 +298,10 @@ const keywords = [
         'awesome',
         'awesomeness',
         'enjoy',
-        'enjoying'
+        'enjoying',
+        'vibe',
+        'vibes',
+        'vibing'
     ]
 ];
 //hasWord func taken from https://stackoverflow.com/a/55163552
@@ -376,6 +379,7 @@ const getAllPlaylistTracks = function (playlist_id) {
                     //found a rare, undocumented case of the track object sometimes returning null, specifically when calling the endpoint for this playlist: 6BbewZJ0Cv6V9XSXyyDBSm
                     //there's also podcasts, so the track has to be of a specific type
                     if(!!track && !track.is_local && track.type == 'track') playlist_songs.push(item);
+                    else console.log("Item returned false: ", item);
                 }
                 //if there's more songs in the playlist, call ourselves again, otherwise resolve
                 if(!res.next) {
@@ -616,14 +620,15 @@ const getRecentSongs = function(uid = '') {
     //I also ensure that there are no duplicates in that array, for UI purposes.
     //I then sort that array by newest song descending, and extract the top 5 songs. i can easily
     //reference which playlist they were taken from thanks to the ID I manually injected.
-    let tmp_arr = [],
-    sorted_playlist_arr = Object.values(user_cache[uid].playlists).sort((a,b) => new Date(b.items.sort((c,d) => new Date(d.added_at) - new Date(c.added_at))[0].added_at) - new Date(a.items.sort((c,d) => new Date(d.added_at) - new Date(c.added_at))[0].added_at));
-    for(let i=0, current_playlist=sorted_playlist_arr[i]; i < 5; current_playlist=sorted_playlist_arr[++i]) 
-        for(let j=0, current_item=current_playlist.items.shift(); j < 5; current_item=current_playlist.items.shift()) {
-            if(!current_item) break;    //playlist has less than 5 songs in it (kinda dumb but nothing i can do about it lol)
+    let tmp_arr = [];
+    let sorted_playlist_arr = Object.values(user_cache[uid].playlists).sort((a,b) => new Date(b.items.sort((c,d) => new Date(d.added_at) - new Date(c.added_at))[0].added_at) - new Date(a.items.sort((c,d) => new Date(d.added_at) - new Date(c.added_at))[0].added_at));
+    for(let i=0, current_playlist=sorted_playlist_arr[i], songs_added=0; i < 5; current_playlist=sorted_playlist_arr[++i], songs_added=0) 
+        for(const current_item of current_playlist.items) {
+            if(songs_added >= 5) break; //if we've added 5 songs from this playlist, move to the next one
+            if(!current_item || current_item.added_by.id != uid) continue;  //error catching
             if(tmp_arr.some(item => item.track.id == current_item.track.id)) continue;  //if track already exists in collected recent songs, move to the next one
             tmp_arr.push({...current_item, playlist_id:current_playlist.id});   //add the track as well as the playlist id for future reference
-            j++;    //increment variable once all conditions have been met and all operations have been performed
+            songs_added++;  //increment variable to be checked at beginning of loop
         }
     tmp_arr.sort((a,b) => new Date(b.added_at) - new Date(a.added_at));
     return tmp_arr;
@@ -822,6 +827,7 @@ const main = async function (uid_array = []) {
         await retrieveUserData(uid_array[0]);
         pb = { min_val:0.5, max_val:1 };
         await retrieveUserData(uid_array[1]);
+        document.user_cache = user_cache;
         //reset the html
         $("#user-results-wrapper").html(`<div class="user-info-box" id="${uid_array[0]}"></div><div class="user-info-box" id="${uid_array[1]}"></div>`);
         //display the results
